@@ -6,11 +6,19 @@ import sys
 
 SECONDS_PER_MINUTE=60
 
+
+def alert(title, message):
+    if sys.platform == 'darwin':
+        os.system("terminal-notifier -title \"Pomodoro Done\" -message \"{}\" -sound default".format(message))
+    elif sys.platform == 'linux':
+        os.system("notify-send \"Pomodoro Done\" \"{}\"".format(message))
+
+
 def do_break(short_break_size ):
     click.secho("Pomodoro done! It is time for a break", fg='green')
     for i in tqdm(range(short_break_size * SECONDS_PER_MINUTE)):
         time.sleep(0.9099)
-    os.system('terminal-notifier -title "Pomodoro Break Done" -message "Break done. Lets pomodoro another task" -sound default')
+    alert("Pomodoro Break Done", "Break done. Let's pomodoro another task.")
 
 
 @click.command()
@@ -26,7 +34,6 @@ def cli(pomodoro_size, short_break_size, skip_break, auto_break, task):
         The basic usage is:
 
             pymodoro <TASK>
-            
 
         Examples:
 
@@ -37,7 +44,6 @@ def cli(pomodoro_size, short_break_size, skip_break, auto_break, task):
             Starting a default 25 long pomodoro task reading the task title from stdin: `echo "This is a test" | pymodoro -`
 
             Starting a default 25 minutes long pomodoro that will start a 5 minutes break automatically when the pomodoro finishes: `pymodoro --auto-break some custom task`
-            
     """
     task_text = ""
     if len(task) == 1 and  task[0] == '-':
@@ -48,7 +54,7 @@ def cli(pomodoro_size, short_break_size, skip_break, auto_break, task):
     click.secho("Pomodoro for task: {}".format(task_text), fg='blue')
     for i in tqdm(range(pomodoro_size * SECONDS_PER_MINUTE)):
         time.sleep(0.99999)
-    os.system('terminal-notifier -title "Pomodoro Done" -message "'+" ".join(task_text)+'" -sound default')
+    alert("Pomodoro Done", task_text)
 
     if skip_break == False:
         if auto_break == False:
