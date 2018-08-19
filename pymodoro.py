@@ -9,9 +9,9 @@ SECONDS_PER_MINUTE=60
 
 def alert(title, message):
     if sys.platform == 'darwin':
-        os.system("terminal-notifier -title \"Pomodoro Done\" -message \"{}\" -sound default".format(message))
+        os.system("terminal-notifier -title \"{}\" -message \"{}\" -sound default".format(title, message))
     elif sys.platform == 'linux':
-        os.system("notify-send \"Pomodoro Done\" \"{}\"".format(message))
+        os.system("notify-send \"{}\" \"{}\"".format(title, message))
 
 
 def do_break(short_break_size ):
