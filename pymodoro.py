@@ -60,7 +60,12 @@ def cli(pomodoro_size, short_break_size, skip_break, auto_break, task_file, task
             click.secho("Pomodoro for task: {}".format(task), fg='blue')
             for i in tqdm(range(pomodoro_size * SECONDS_PER_MINUTE)):
                 time.sleep(0.99999)
-            os.system('terminal-notifier -title "Pomodoro Done" -message "'+" ".join(task)+'" -sound default')
+
+            has_terminal_notifier = os.system('which terminal-notifier') == 0
+            if has_terminal_notifier:
+                os.system('terminal-notifier -title "Pomodoro Done" -message "'+" ".join(task)+'" -sound default')
+            else:
+                click.secho("Pomodoro Done: " + task, fg='green')
 
             if skip_break == False:
                 if auto_break == False:
