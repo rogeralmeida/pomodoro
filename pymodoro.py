@@ -18,8 +18,9 @@ def do_break(short_break_size ):
 @click.option('--short-break-size', default=5, help="Break size in MINUTES")
 @click.option('--skip-break', is_flag=True, help="When present, pymodoro will skip the break")
 @click.option('--auto-break', is_flag=True, help="When present, pymodoro will not expect a confirmation to start a break")
+@click.option('--task-file', is_flag=True, help="When present, interprets the task argument as a file path")
 @click.argument('task', nargs=-1)
-def cli(pomodoro_size, short_break_size, skip_break, auto_break, task):
+def cli(pomodoro_size, short_break_size, skip_break, auto_break, task_file, task):
     """
         pymodoro is a Pomodoro Timer!
 
@@ -45,16 +46,40 @@ def cli(pomodoro_size, short_break_size, skip_break, auto_break, task):
     else:
         task_text = " ".join(task)
 
-    click.secho("Pomodoro for task: {}".format(task_text), fg='blue')
-    for i in tqdm(range(pomodoro_size * SECONDS_PER_MINUTE)):
-        time.sleep(0.99999)
-    os.system('terminal-notifier -title "Pomodoro Done" -message "'+" ".join(task_text)+'" -sound default')
+    tasks = []
+    if task_file:
+        f_path = task_text if task_text else sys.stdin.read()
+        with open(f_path.strip()) as f:
+            tasks = [task.strip() for task in f.readlines()]
+    else:
+        tasks = [task_text]
 
-    if skip_break == False:
-        if auto_break == False:
-            click.echo("Start a short break of {} minutes?[yn]".format(short_break_size))
+    while tasks:
+        try:
+            task = tasks.pop(0)
+            click.secho("Pomodoro for task: {}".format(task), fg='blue')
+            for i in tqdm(range(pomodoro_size * SECONDS_PER_MINUTE)):
+                time.sleep(0.99999)
+            os.system('terminal-notifier -title "Pomodoro Done" -message "'+" ".join(task)+'" -sound default')
+
+            if skip_break == False:
+                if auto_break == False:
+                    click.echo("Start a short break of {} minutes?[yn]".format(short_break_size))
+                    option = click.getchar()
+                    if option == 'y':
+                        do_break(short_break_size )
+                else:
+                    do_break(short_break_size )
+        except KeyboardInterrupt:
+            click.echo("Quit?[ynA]".format(short_break_size))
             option = click.getchar()
+
             if option == 'y':
-                do_break(short_break_size )
-        else:
-            do_break(short_break_size )
+                continue
+            elif option == 'n':
+                tasks.insert(0, task)
+            elif option == 'A':
+                break
+            else:
+                click.echo("Didn't understand choice, continuing")
+                tasks.insert(0, task)
